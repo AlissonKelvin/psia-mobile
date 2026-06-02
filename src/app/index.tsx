@@ -1,98 +1,89 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Link } from "expo-router";
+import { Brain, Mic, Sparkles } from "lucide-react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { colors } from "@/constants/colors";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+export default function WelcomeScreen() {
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
+    <View className="flex-1 bg-[#FCF3FB] px-8 pb-8 pt-12">
+      <View className="flex-row items-center gap-3">
+        <View className="h-8 w-8 items-center justify-center rounded-full bg-[#9B5FD3] shadow-lg">
+          <View className="h-2 w-2 rounded-full bg-white" />
+        </View>
+
+        <Text className="text-base font-bold text-[#241744]">PSIA</Text>
+      </View>
+
+      <View className="mt-16">
+        <Text className="text-[38px] font-bold leading-[48px] text-[#241744]">
+          Escuta com
+        </Text>
+
+        <Text className="text-[38px] font-bold leading-[48px]">
+          <Text className="text-[#9B5FD3]">cuidado</Text>
+          <Text className="text-[#241744]">, análise</Text>
+        </Text>
+
+        <Text className="text-[38px] font-bold leading-[48px]">
+          <Text className="text-[#241744]">com </Text>
+          <Text className="text-[#9B5FD3]">precisão</Text>
+          <Text className="text-[#241744]">.</Text>
+        </Text>
+
+        <Text className="mt-6 text-base leading-7 text-[#6F527D]">
+          PSIA apoia psicólogas no acompanhamento de relatos por texto e áudio,
+          com transcrição e análise estruturada por IA.
+        </Text>
+      </View>
+
+      <View className="mt-10 flex-row justify-between">
+        <FeatureCard
+          icon={<Mic size={22} color={colors.primary} />}
+          label="Áudio"
+        />
+        <FeatureCard
+          icon={<Sparkles size={22} color={colors.primary} />}
+          label="Texto"
+        />
+        <FeatureCard
+          icon={<Brain size={22} color={colors.primary} />}
+          label="Resumo IA"
+        />
+      </View>
+
+      <View className="mt-auto gap-3">
+        <Link href="/auth/login" asChild>
+          <TouchableOpacity className="h-14 items-center justify-center rounded-full bg-[#9B5FD3] shadow-lg">
+            <Text className="text-base font-bold text-white">Entrar</Text>
+          </TouchableOpacity>
+        </Link>
+
+        <Link href="/auth/register-psychologist" asChild>
+          <TouchableOpacity className="h-14 items-center justify-center rounded-full border border-[#E8D9EA] bg-white shadow-sm">
+            <Text className="text-base font-bold text-[#241744]">
+              Criar conta de psicóloga
+            </Text>
+          </TouchableOpacity>
+        </Link>
+      </View>
+    </View>
   );
 }
 
-export default function HomeScreen() {
+type FeatureCardProps = {
+  icon: React.ReactNode;
+  label: string;
+};
+
+function FeatureCard({ icon, label }: FeatureCardProps) {
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <View className="h-24 w-[31%] items-center justify-center rounded-3xl border border-[#E8D9EA] bg-white shadow-sm">
+      <View className="h-10 w-10 items-center justify-center rounded-full bg-[#FCE8F5]">
+        {icon}
+      </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <Text className="mt-3 text-sm text-[#4F3563]">{label}</Text>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});
