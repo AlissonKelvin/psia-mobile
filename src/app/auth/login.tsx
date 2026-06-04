@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 import { api } from "@/services/api";
-import { saveToken, saveUser } from "@/storage/auth-storage";
+import { saveToken } from "@/storage/auth-storage";
 
 type UserRole = "psychologist" | "patient";
 
@@ -29,11 +29,11 @@ export default function LoginScreen() {
       const response = await api.post("/auth/login", {
         email,
         password,
-        role,
       });
 
+      console.log("LOGIN_RESPONSE", response.data);
+
       await saveToken(response.data.access_token);
-      await saveUser(response.data.user);
 
       if (role === "psychologist") {
         router.replace("/psychologist/home");
@@ -41,13 +41,19 @@ export default function LoginScreen() {
       }
 
       router.replace("/patient/home");
-    } catch {
+    } catch (error: any) {
+      console.log("LOGIN_ERROR", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        baseURL: process.env.EXPO_PUBLIC_API_URL,
+      });
+
       setErrorMessage("E-mail ou senha inválidos.");
     } finally {
       setIsLoading(false);
     }
   }
-
   return (
     <View className="flex-1 bg-[#FCF3FB] px-8 pt-12">
       <TouchableOpacity
