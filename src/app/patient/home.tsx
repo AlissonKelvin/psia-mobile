@@ -8,7 +8,14 @@ import {
   User,
 } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import {
   createAudioJournal,
@@ -26,6 +33,8 @@ export default function PatientHomeScreen() {
   const [seconds, setSeconds] = useState(0);
   const [audioUri, setAudioUri] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [isSendingText, setIsSendingText] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -97,7 +106,7 @@ export default function PatientHomeScreen() {
         return;
       }
 
-      console.log("AUDIO_URI", audioUri);
+      setIsUploadingAudio(true);
 
       const response = await createAudioJournal(audioUri);
 
@@ -117,6 +126,8 @@ export default function PatientHomeScreen() {
       });
 
       Alert.alert("Erro", "Não foi possível enviar o relato por áudio.");
+    } finally {
+      setIsUploadingAudio(false);
     }
   }
 
@@ -124,9 +135,10 @@ export default function PatientHomeScreen() {
     try {
       if (!text.trim()) {
         Alert.alert("Relato vazio", "Escreva seu relato antes de enviar.");
-
         return;
       }
+
+      setIsSendingText(true);
 
       const response = await createTextJournal(text);
 
@@ -143,6 +155,8 @@ export default function PatientHomeScreen() {
       });
 
       Alert.alert("Erro", "Não foi possível enviar o relato.");
+    } finally {
+      setIsSendingText(false);
     }
   }
 
@@ -207,14 +221,26 @@ export default function PatientHomeScreen() {
             <View className="mt-8 w-full gap-3">
               <TouchableOpacity
                 onPress={saveAudioReport}
+                disabled={isUploadingAudio}
                 className="h-14 items-center justify-center rounded-full bg-[#9B5FD3]"
+                style={{ opacity: isUploadingAudio ? 0.7 : 1 }}
               >
-                <Text className="font-bold text-white">Salvar relato</Text>
+                {isUploadingAudio ? (
+                  <View className="flex-row items-center gap-2">
+                    <ActivityIndicator color="#FFFFFF" />
+                    <Text className="font-bold text-white">
+                      Enviando relato...
+                    </Text>
+                  </View>
+                ) : (
+                  <Text className="font-bold text-white">Salvar relato</Text>
+                )}
               </TouchableOpacity>
-
               <TouchableOpacity
                 onPress={discardAudio}
+                disabled={isUploadingAudio}
                 className="h-14 items-center justify-center rounded-full border border-[#E8D9EA] bg-white"
+                style={{ opacity: isUploadingAudio ? 0.6 : 1 }}
               >
                 <Text className="font-bold text-[#241744]">
                   Gravar novamente
@@ -242,10 +268,21 @@ export default function PatientHomeScreen() {
 
           <TouchableOpacity
             onPress={sendTextReport}
-            className="mt-3 h-14 flex-row items-center justify-center gap-2 rounded-full bg-[#C8A3E5]"
+            disabled={isSendingText}
+            className="mt-3 h-14 flex-row items-center justify-center gap-2 rounded-full bg-[#9B5FD3]"
+            style={{ opacity: isSendingText ? 0.7 : 1 }}
           >
-            <Send size={18} color="#FFFFFF" />
-            <Text className="font-bold text-white">Enviar relato</Text>
+            {isSendingText ? (
+              <>
+                <ActivityIndicator color="#FFFFFF" />
+                <Text className="font-bold text-white">Enviando relato...</Text>
+              </>
+            ) : (
+              <>
+                <Send size={18} color="#FFFFFF" />
+                <Text className="font-bold text-white">Enviar relato</Text>
+              </>
+            )}
           </TouchableOpacity>
         </View>
       )}
