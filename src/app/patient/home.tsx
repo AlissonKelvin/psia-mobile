@@ -10,6 +10,11 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 
+import {
+  createAudioJournal,
+  createTextJournal,
+} from "@/services/journal-service";
+
 type ReportMode = "audio" | "text";
 
 const MAX_SECONDS = 30;
@@ -87,23 +92,58 @@ export default function PatientHomeScreen() {
   }
 
   async function saveAudioReport() {
-    if (!audioUri) {
-      return;
-    }
+    try {
+      if (!audioUri) {
+        return;
+      }
 
-    Alert.alert("Relato salvo", "Seu relato por áudio foi salvo para análise.");
-    setAudioUri(null);
-    setSeconds(0);
+      console.log("AUDIO_URI", audioUri);
+
+      const response = await createAudioJournal(audioUri);
+
+      console.log("AUDIO_JOURNAL_RESPONSE", response);
+
+      Alert.alert(
+        "Relato salvo",
+        "Seu relato por áudio foi enviado com sucesso.",
+      );
+      setAudioUri(null);
+      setSeconds(0);
+    } catch (error: any) {
+      console.log("AUDIO_JOURNAL_ERROR", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
+
+      Alert.alert("Erro", "Não foi possível enviar o relato por áudio.");
+    }
   }
 
   async function sendTextReport() {
-    if (!text.trim()) {
-      Alert.alert("Relato vazio", "Escreva seu relato antes de enviar.");
-      return;
-    }
+    try {
+      if (!text.trim()) {
+        Alert.alert("Relato vazio", "Escreva seu relato antes de enviar.");
 
-    Alert.alert("Relato enviado", "Seu relato foi enviado para análise.");
-    setText("");
+        return;
+      }
+
+      const response = await createTextJournal(text);
+
+      console.log("JOURNAL_RESPONSE", response);
+
+      Alert.alert("Relato enviado", "Seu relato foi enviado com sucesso.");
+
+      setText("");
+    } catch (error: any) {
+      console.log("JOURNAL_ERROR", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
+
+      Alert.alert("Erro", "Não foi possível enviar o relato.");
+    }
   }
 
   useEffect(() => {
@@ -116,8 +156,6 @@ export default function PatientHomeScreen() {
 
   return (
     <View className="flex-1 bg-[#FCF3FB] px-5 pt-8">
-      <Text className="text-sm text-[#6F527D]">Olá, Marina</Text>
-
       <Text className="mt-1 text-2xl font-bold text-[#241744]">
         Como você está hoje?
       </Text>
